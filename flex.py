@@ -1,9 +1,13 @@
-def flex_rated(url,list_voter):
-    voter = [__flex_voter__(x[0],x[1]) for x in list_voter]
-    flex = __flex_body__(url,voter)
-    return flex
+from linebot.models import (
+    BubbleContainer 
+)
+
+def flex_rated(title,url_img,list_voter):
+    voter = [__flex_voter__(x[0],x[1].replace(",",", ")) for x in list_voter]
+    flex = __flex_body__(title,url_img,voter)
+    return BubbleContainer(**flex)
     
-def __flex_body__(url,voter):
+def __flex_body__(title,url,voter):
     flex = {
       "type": "bubble",
       "hero": {
@@ -19,9 +23,16 @@ def __flex_body__(url,voter):
         "contents": [
           {
             "type": "text",
-            "text": "Brown Cafe",
+            "text": "",
             "weight": "bold",
             "size": "xl"
+          },
+          {
+            "type": "text",
+            "text": "scored",
+            "color": "#aaaaaa",
+            "size": "md",
+            "flex": 1
           },
           {
             "type": "box",
@@ -34,8 +45,9 @@ def __flex_body__(url,voter):
         ]
       }
     }
+    flex['body']['contents'][0]['text'] = "ID cewe : {}".format(title)
     flex['hero']['url'] = url
-    flex['body']['contents'][1]['contents'] = voter
+    flex['body']['contents'][2]['contents'] = voter
     
     return flex
       
@@ -62,7 +74,7 @@ def __flex_voter__(score,names):
               }
             ]
           }
-    voter['contents'][0]['text'] = score
+    voter['contents'][0]['text'] = str(score)
     voter['contents'][1]['text'] = names
     return voter
 

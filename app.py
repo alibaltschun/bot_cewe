@@ -13,7 +13,7 @@ from linebot.exceptions import (
     InvalidSignatureError
 )
 from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage, ImageMessage, FlexSendMessage
+    MessageEvent, TextMessage, TextSendMessage, ImageMessage, FlexSendMessage , BubbleStyle
 )
 
 app = Flask(__name__, static_url_path='')
@@ -111,30 +111,48 @@ def handle_image_message(event):
     
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
-    text = event.message.text
+    text = event.message.text.lower()
     
     print(text)    
-    words = text.lower().split()
+    words = text.split()
     
-    
-    if len(words) > 2:
-        if words[0] == "rate" or words[0] == "rating" :
-            if words[1].isdigit() and words[2].isdigit():
-                profile = line_bot_api.get_profile(event.source.user_id)
-                name = profile.display_name.replace(" ","_")
-                
-                id_cewe = words[1]
-                score = words[2]
-                rate_cewe(name,id_cewe,score)
-                url_img = HTTPS+STATIC+"/"+str(id_cewe)+".jpg"
-                
-                rate_list = get_rated(id_cewe)
-                flex_dict = flex.flex_rated(url_img,rate_list)
-                                                
-                line_bot_api.reply_message(
-                    event.reply_token,
-                    FlexSendMessage(alt_text='hello',
-                                    contents=flex_dict))
+    if words[0] == "kony":
+        if len(words) == 4:
+            if words[1] == "rate" or words[1] == "rating" :
+                if words[2].isdigit() and words[3].isdigit():
+                    profile = line_bot_api.get_profile(event.source.user_id)
+                    name = profile.display_name.replace(" ","_")
+                    
+                    id_cewe = words[2]
+                    score = words[3]
+                    rate_cewe(name,id_cewe,score)
+                    url_img = HTTPS+STATIC+"/"+str(id_cewe)+".jpg"
+                    
+                    if os.path.isfile("."+STATIC+"/"+str(id_cewe)+".jpg"):
+                        list_voter = get_rated(id_cewe)
+                                                        
+                        line_bot_api.reply_message(
+                            event.reply_token,
+                            FlexSendMessage(alt_text='hello',
+                                            contents=flex.flex_rated(str(id_cewe),url_img,list_voter)))
+                    else:
+                        line_bot_api.reply_message(
+                            event.reply_token,
+                            TextSendMessage(text="sorry id cewe does not exist"))
+        
+        elif text == "kony createtablevoting":
+            create_table()
+        elif text == "kony help":
+            
+            text_help = """add data : send image message
+            
+rating cewe : 'kony rate id_cewe rating'
+e.g -> 'kony rate 1 10'
+rating range (0-10) """
+            
+            line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=text_help))
 
 
 
