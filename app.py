@@ -1,7 +1,10 @@
 from flask import Flask, request, abort , send_from_directory
 import os
 import sqlite3
-
+import pandas as pd
+from operator import itemgetter
+from itertools import groupby
+import flex
 
 from linebot import (
     LineBotApi, WebhookHandler
@@ -10,13 +13,13 @@ from linebot.exceptions import (
     InvalidSignatureError
 )
 from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage, ImageMessage
+    MessageEvent, TextMessage, TextSendMessage, ImageMessage, FlexSendMessage
 )
 
 app = Flask(__name__, static_url_path='')
 
-HTTPS = "https://7e429605.ngrok.io"
-STATIC = "./static"
+HTTPS = "https://176aeca9.ngrok.io"
+STATIC = "/static"
 
 line_bot_api = LineBotApi('xfPpCZHO/w7j29jpXnBDisR8sKF+MAFMvnHdm7w/99w1MMrQ21WfRlEJIdOIPR5xrHWJL4emyQMYpaTq9P4dOA3npas6p0dHCiSn7n+QTpsgPFr1CTx/qAzV43OAVVkn4Pky5hok0xPb0adLle0ylAdB04t89/1O/w1cDnyilFU=')
 handler = WebhookHandler('5c981055d3fc5b13b054b0a0b89b928c')
@@ -46,8 +49,9 @@ def get_rated(id_cewe):
     c = conn.cursor()
     
     rows = []
-    for row in c.execute('''select * from rating
-                         where id_cewe={}'''.format(id_cewe)):
+    for row in c.execute('''select rate,group_concat(username, ",") from rating
+                         where id_cewe={}
+                         group by rate'''.format(id_cewe)):
         rows.append(row)
     conn.commit()
     conn.close()
@@ -65,9 +69,6 @@ def select_all_rating():
     conn.close()
     return rows
 
-r = get_rated(1)
-print(select_all_rating())
-rate_cewe("b",3,2)
 
 @app.route('/static/<path:path>')
 def send_js(path):
@@ -111,26 +112,33 @@ def handle_image_message(event):
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
     text = event.message.text
-        
-    words = text.split()
+    
+    print(text)    
+    words = text.lower().split()
+    
     
     if len(words) > 2:
-        if words[1] is int and words[2] is int:
-            profile = line_bot_api.get_profile(event.source.user_id)
-            name = profile.display_name.replace(" ","_")
-            
-            if not os.path.exists("./rating/"+name):
-                os.makedirs("./rating/"+name)
-            
-            id_cewe = "./static/"+words[1]+".jpg"
-            score = words[2]
-            
-            reply = "{} voted {} by {}".format(id_cewe,name,score)
-            rate_cewe(name,id_cewe,score)
-            
-            line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(reply))
+        if words[0] == "rate" or words[0] == "rating" :
+            if words[1].isdigit() and words[2].isdigit():
+                profile = line_bot_api.get_profile(event.source.user_id)
+                name = profile.display_name.replace(" ","_")
+                
+                id_cewe = words[1]
+                score = words[2]
+                rate_cewe(name,id_cewe,score)
+                url_img = HTTPS+STATIC+"/"+str(id_cewe)+".jpg"
+                
+                rate_list = get_rated(id_cewe)
+                flex_dict = flex.flex_rated(url_img,rate_list)
+                                                
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    FlexSendMessage(alt_text='hello',
+                                    contents=flex_dict))
+
+
+
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0",port=5000,debug=True)
