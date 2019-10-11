@@ -16,8 +16,8 @@ from linebot.models import (
 
 app = Flask(__name__, static_url_path='')
 
-HTTPS = config("LINE_HTTP",
-           default=os.environ.get('LINE_HTTP'))
+HTTPS = config("NGROK_HTTP",
+           default=os.environ.get('NGROK_HTTP'))
 STATIC = "/static"
 
 line_bot_api = LineBotApi(
