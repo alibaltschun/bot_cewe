@@ -126,7 +126,7 @@ def callback():
 def handle_image_message(event):
     message_content = line_bot_api.get_message_content(event.message.id)
     
-    n = len([name for name in os.listdir(STATIC) if os.path.isfile(STATIC+"/"+name)])
+    n = len([name for name in os.listdir("."+STATIC) if os.path.isfile("."+STATIC+"/"+name)])
     filename = "./static/"+str(n)+".jpg"
     with open(filename, 'wb') as fd:
         for chunk in message_content.iter_content():
