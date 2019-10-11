@@ -14,7 +14,7 @@ def __flex_body__(title,url,voter):
         "type": "image",
         "url": "",
         "size": "full",
-        "aspectRatio": "20:20",
+        "aspectRatio": "2:3",
         "aspectMode": "cover"
       },
       "body": {
