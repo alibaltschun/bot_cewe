@@ -12,4 +12,5 @@
 ### 3rd part package
 
 `pip install line-bot-sdk'
-`pip install python-decouple'
+
+`pip install python-decouple`
