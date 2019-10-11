@@ -197,17 +197,17 @@ def handle_text_message(event):
                     line_bot_api.reply_message(
                                     event.reply_token,
                                     TextSendMessage(text="you already voted all cewe"))
-            else:
-                line_bot_api.reply_message(
-                        event.reply_token,
-                        TextSendMessage(text=text_help))
             
         elif text == "kony createtablevoting":
             create_table()
         elif text == "kony help":
             line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=text_help))
+                    event.reply_token,
+                    TextSendMessage(text=text_help))
+        else:
+            line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text=text_help))
 
 
 
