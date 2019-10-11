@@ -25,8 +25,10 @@ handler = WebhookHandler(config("LINE_CHANNEL_SECRET",
 
 app = Flask(__name__, static_url_path='')
 
-VOTE_REGEX = ["vote","voting","rate","rating","-r"]
-UNVOTE_REGEX = ["unvote","unvoting","unrate","unrating","-ur"]
+VOTE_REGEX = ["vote","voting","voted",
+              "rate","rating", "voted","-r"]
+UNVOTE_REGEX = ["unvote","unvoting","unvoted", "-uv",
+                "unrate","unrating","unrated","-ur"]
 
 STATIC = "/static"
 LOCAL_STATIC = "."+STATIC
@@ -107,6 +109,7 @@ def handle_text_message(event):
     words = text.split()
     
     if words[0] == "kony":
+        print(words[1] in VOTE_REGEX)
         if words[1] in VOTE_REGEX:
             if words[2].isdigit() and words[3].isdigit():
                 # Get user id and username
@@ -132,7 +135,8 @@ def handle_text_message(event):
                         event.reply_token,
                         TextSendMessage(text="sorry id cewe does not exist"))
         
-        elif words[1] == "get" and words[2] == "cewe" :            
+        elif words[1] == "get" and words[2] == "cewe" :   
+            print(words[3] in UNVOTE_REGEX)
             if words[3] in UNVOTE_REGEX:
                 
                 # get user id and username
@@ -153,7 +157,7 @@ def handle_text_message(event):
                         event.reply_token,
                         FlexSendMessage(
                                 alt_text='cewe voted by {}'.format(name),
-                                contents=flex.flex_rated(str(id_cewe),
+                                contents=flex.flex_rated(str(id_cewe[0]),
                                                          url_img,list_voter)))
                 else:
                     line_bot_api.reply_message(
