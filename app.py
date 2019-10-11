@@ -10,7 +10,8 @@ from linebot.exceptions import (
     InvalidSignatureError
 )
 from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage, ImageMessage, FlexSendMessage 
+    MessageEvent, TextMessage, TextSendMessage,
+    ImageMessage, FlexSendMessage , CarouselContainer
 )
 
 
@@ -27,8 +28,6 @@ app = Flask(__name__, static_url_path='')
 
 VOTE_REGEX = ["vote","voting","voted",
               "rate","rating", "voted","-r"]
-UNVOTE_REGEX = ["unvote","unvoting","unvoted", "-uv",
-                "unrate","unrating","unrated","-ur"]
 
 STATIC = "/static"
 LOCAL_STATIC = "."+STATIC
@@ -41,17 +40,17 @@ TEXT_HELP = """# Send image message
 - Rating cewe
 -- syntax : `kony vote_regex id_cewe score`
 -- e.g : kony vote 1 1
+-- info : give score 0 for invalid data
 
 - Get unrated cewe by user
--- syntax : `kony get cewe unrated_regex`
--- e.g : kony get cewe unrated
+-- syntax : `kony get'
+-- info : return max 5
 
 # info 
 vote_regex : {}
-unvoted_regex : {}
 
 info keywords:
-""".format(VOTE_REGEX,UNVOTE_REGEX)
+""".format(VOTE_REGEX)
     
 
 
@@ -59,7 +58,6 @@ def __send_help_message__(event):
     line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=TEXT_HELP))
-
 
 @app.route('/static/<path:path>')
 def send_js(path):
@@ -109,7 +107,7 @@ def handle_text_message(event):
     words = text.split()
     
     if words[0] == "kony":
-        if words[1] in VOTE_REGEX:
+        if words[1] in VOTE_REGEX: # vote
             if words[2].isdigit() and words[3].isdigit():
                 # Get user id and username
                 profile = line_bot_api.get_profile(event.source.user_id)
@@ -134,41 +132,38 @@ def handle_text_message(event):
                         event.reply_token,
                         TextSendMessage(text="sorry id cewe does not exist"))
         
-        elif words[1] == "get" and words[2] == "cewe" :   
+        elif words[1] == "get" :   
                        
             # get user id and username
             profile = line_bot_api.get_profile(event.source.user_id)
             name = profile.display_name.replace(" ","_")
             
             # get id cewe that not voted by username
-            id_cewe =db. __get_cewe_unvoted__(name)
+            ids_cewe =db. __get_cewe_unvoted__(name)
             
-            if len(words) > 3:
-                if words[3] in UNVOTE_REGEX:
+            print(ids_cewe)
+            if ids_cewe[0] != -1:
+                flex_messages = []
+                if len(ids_cewe) > 5:
+                    ids_cewe = ids_cewe[:5]
                     
-                    # check if user already voted all data
-                    if id_cewe[0] != -1:
-                        
-                        #get img url and get list of voter
-                        url_img = HTTPS+STATIC+"/"+str(id_cewe[0])+".jpg"
-                        list_voter = db.__get_rated__(id_cewe[0])
-                        
-                        line_bot_api.reply_message(
-                            event.reply_token,
-                            FlexSendMessage(
-                                    alt_text='cewe voted by {}'.format(name),
-                                    contents=flex.flex_rated(str(id_cewe[0]),
-                                                             url_img,list_voter)))
+                for id_cewe in ids_cewe:
+                    url_img = HTTPS+STATIC+"/"+str(id_cewe)+".jpg"
+                    list_voter = db.__get_rated__(id_cewe)
                     
-                    elif len(words) == 3:
-                        line_bot_api.reply_message(
-                                event.reply_token,
-                                TextSendMessage(text="you already voted all cewe"))
+                    flex_message = flex.flex_rated(str(id_cewe),url_img,list_voter)
+                    flex_messages.append(flex_message)
+                
+                print(type(flex_messages[0]))        
+                flex_messages = CarouselContainer(flex_messages)
+                flex_messages = FlexSendMessage("list cewe",flex_messages)
+                line_bot_api.reply_message(event.reply_token,flex_messages)
+                    
             else:
                 line_bot_api.reply_message(
-                    event.reply_token,
-                    TextSendMessage(text="id cewe that not voted by {} : {}".format(
-                            name,id_cewe)))
+                        event.reply_token,
+                        TextSendMessage(text="you already voted all cewe"))
+            
             
         elif text == "kony createtablevoting":
             # create table voting
