@@ -90,7 +90,7 @@ def get_cewe_unvoted(username):
     rows = [i[0] for i in rows]
     n = len([name for name in os.listdir("."+STATIC) if os.path.isfile("."+STATIC+"/"+name)])
     id_cewe = -1
-    for i in range(1,n+1):
+    for i in range(0,n+1):
         if i not in rows:
             id_cewe = i
             break
