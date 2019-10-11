@@ -1,5 +1,9 @@
 import sqlite3
+import os
 
+
+STATIC = "/static"
+LOCAL_STATIC = "."+STATIC
 
 def __create_table__():
     conn = sqlite3.connect('cewe.db')
@@ -61,9 +65,9 @@ def __get_cewe_unvoted__(username):
     
     # get smallest id cewe that not been voted by user
     rows = [i[0] for i in rows]
-    n = len([name for name in os.listdir("."+STATIC) if os.path.isfile("."+STATIC+"/"+name)])
+    n = len([name for name in os.listdir(LOCAL_STATIC) if os.path.isfile(LOCAL_STATIC+"/"+name)])
     id_cewe = list(set([i for i in range(n)])-set(rows))
-    id_cewe = -1 if id_cewe == [] else id_cewe
+    id_cewe = [-1] if id_cewe == [] else id_cewe
     
     return id_cewe
     
