@@ -30,6 +30,18 @@ handler = WebhookHandler(
            default=os.environ.get('LINE_CHANNEL_SECRET'))
 )
     
+text_help = """add data : send image message
+            
+rating cewe : 'kony rate id_cewe rating'
+e.g -> 'kony rate 1 10'
+rating range (0-10) 
+for non cewe data please give -1 score
+
+get unrated cewe by user : 'kony get cewe unvoted 
+
+info keywords:
+rate or rating or vote or voting"""
+    
 
 def create_table():
     conn = sqlite3.connect('cewe.db')
@@ -185,23 +197,14 @@ def handle_text_message(event):
                     line_bot_api.reply_message(
                                     event.reply_token,
                                     TextSendMessage(text="you already voted all cewe"))
+            else:
+                line_bot_api.reply_message(
+                        event.reply_token,
+                        TextSendMessage(text=text_help))
             
         elif text == "kony createtablevoting":
             create_table()
         elif text == "kony help":
-            
-            text_help = """add data : send image message
-            
-rating cewe : 'kony rate id_cewe rating'
-e.g -> 'kony rate 1 10'
-rating range (0-10) 
-for non cewe data please give -1 score
-
-get unrated cewe by user : 'kony get cewe unvoted 
-
-info keywords:
-rate or rating or vote or voting"""
-            
             line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=text_help))
