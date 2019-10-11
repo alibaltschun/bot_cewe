@@ -1,10 +1,8 @@
 from flask import Flask, request, abort , send_from_directory
 import os
 import sqlite3
-import pandas as pd
-from operator import itemgetter
-from itertools import groupby
 import flex
+from decouple import config
 
 from linebot import (
     LineBotApi, WebhookHandler
@@ -13,16 +11,24 @@ from linebot.exceptions import (
     InvalidSignatureError
 )
 from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage, ImageMessage, FlexSendMessage , BubbleStyle
+    MessageEvent, TextMessage, TextSendMessage, ImageMessage, FlexSendMessage 
 )
 
 app = Flask(__name__, static_url_path='')
 
-HTTPS = "https://176aeca9.ngrok.io"
+HTTPS = "https://5e26c200.ngrok.io"
 STATIC = "/static"
 
-line_bot_api = LineBotApi('xfPpCZHO/w7j29jpXnBDisR8sKF+MAFMvnHdm7w/99w1MMrQ21WfRlEJIdOIPR5xrHWJL4emyQMYpaTq9P4dOA3npas6p0dHCiSn7n+QTpsgPFr1CTx/qAzV43OAVVkn4Pky5hok0xPb0adLle0ylAdB04t89/1O/w1cDnyilFU=')
-handler = WebhookHandler('5c981055d3fc5b13b054b0a0b89b928c')
+line_bot_api = LineBotApi(
+    config("LINE_CHANNEL_ACCESS_TOKEN",
+           default=os.environ.get('LINE_ACCESS_TOKEN'))
+)
+# get LINE_CHANNEL_SECRET from your environment variable
+handler = WebhookHandler(
+    config("LINE_CHANNEL_SECRET",
+           default=os.environ.get('LINE_CHANNEL_SECRET'))
+)
+    
 
 def create_table():
     conn = sqlite3.connect('cewe.db')
@@ -159,4 +165,4 @@ rating range (0-10) """
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0",port=5000,debug=True)
+    app.run(host="0.0.0.0",port=5000,debug=False)
