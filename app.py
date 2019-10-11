@@ -195,6 +195,7 @@ def handle_text_message(event):
 rating cewe : 'kony rate id_cewe rating'
 e.g -> 'kony rate 1 10'
 rating range (0-10) 
+for non cewe data please give -1 score
 
 get unrated cewe by user : 'kony get cewe unvoted 
 
