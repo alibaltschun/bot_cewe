@@ -91,7 +91,7 @@ def handle_image_message(event):
     
     # get total data cewe and save new data with filesname {total_data_cewe + 1.jpg}
     n = len([name for name in os.listdir(LOCAL_STATIC) if os.path.isfile(LOCAL_STATIC+"/"+name)])
-    filename = "./static/"+str(n)+".jpg"
+    filename = LOCAL_STATIC+"/"+str(n)+".jpg"
     with open(filename, 'wb') as fd:
         for chunk in message_content.iter_content():
             fd.write(chunk)
@@ -109,7 +109,6 @@ def handle_text_message(event):
     words = text.split()
     
     if words[0] == "kony":
-        print(words[1] in VOTE_REGEX)
         if words[1] in VOTE_REGEX:
             if words[2].isdigit() and words[3].isdigit():
                 # Get user id and username
@@ -136,33 +135,40 @@ def handle_text_message(event):
                         TextSendMessage(text="sorry id cewe does not exist"))
         
         elif words[1] == "get" and words[2] == "cewe" :   
-            print(words[3] in UNVOTE_REGEX)
-            if words[3] in UNVOTE_REGEX:
-                
-                # get user id and username
-                profile = line_bot_api.get_profile(event.source.user_id)
-                name = profile.display_name.replace(" ","_")
-                
-                # get id cewe that not voted by username
-                id_cewe =db. __get_cewe_unvoted__(name)
-
-                # check if user already voted all data
-                if id_cewe != -1:
+                       
+            # get user id and username
+            profile = line_bot_api.get_profile(event.source.user_id)
+            name = profile.display_name.replace(" ","_")
+            
+            # get id cewe that not voted by username
+            id_cewe =db. __get_cewe_unvoted__(name)
+            
+            if len(words) > 3:
+                if words[3] in UNVOTE_REGEX:
                     
-                    #get img url and get list of voter
-                    url_img = HTTPS+STATIC+"/"+str(id_cewe)+".jpg"
-                    list_voter = db.__get_rated__(id_cewe)
+                    # check if user already voted all data
+                    if id_cewe[0] != -1:
+                        
+                        #get img url and get list of voter
+                        url_img = HTTPS+STATIC+"/"+str(id_cewe[0])+".jpg"
+                        list_voter = db.__get_rated__(id_cewe[0])
+                        
+                        line_bot_api.reply_message(
+                            event.reply_token,
+                            FlexSendMessage(
+                                    alt_text='cewe voted by {}'.format(name),
+                                    contents=flex.flex_rated(str(id_cewe[0]),
+                                                             url_img,list_voter)))
                     
-                    line_bot_api.reply_message(
-                        event.reply_token,
-                        FlexSendMessage(
-                                alt_text='cewe voted by {}'.format(name),
-                                contents=flex.flex_rated(str(id_cewe[0]),
-                                                         url_img,list_voter)))
-                else:
-                    line_bot_api.reply_message(
-                        event.reply_token,
-                        TextSendMessage(text="you already voted all cewe"))
+                    elif len(words) == 3:
+                        line_bot_api.reply_message(
+                                event.reply_token,
+                                TextSendMessage(text="you already voted all cewe"))
+            else:
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text="id cewe that not voted by {} : {}".format(
+                            name,id_cewe)))
             
         elif text == "kony createtablevoting":
             # create table voting
