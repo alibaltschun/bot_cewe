@@ -157,49 +157,50 @@ def handle_text_message(event):
     words = text.split()
     
     if words[0] == "kony":
-        if len(words) == 4:
-            if words[1] == "rate" or words[1] == "rating" or words[1] == "vote" or words[1] == "voting":
-                if words[2].isdigit() and words[3].isdigit():
-                    profile = line_bot_api.get_profile(event.source.user_id)
-                    name = profile.display_name.replace(" ","_")
-                    
-                    id_cewe = words[2]
-                    score = words[3]
-                    rate_cewe(name,id_cewe,score)
-                    url_img = HTTPS+STATIC+"/"+str(id_cewe)+".jpg"
-                    
-                    if os.path.isfile("."+STATIC+"/"+str(id_cewe)+".jpg"):
-                        list_voter = get_rated(id_cewe)
-                                                        
-                        line_bot_api.reply_message(
-                            event.reply_token,
-                            FlexSendMessage(alt_text='hello',
-                                            contents=flex.flex_rated(str(id_cewe),url_img,list_voter)))
-                    else:
-                        line_bot_api.reply_message(
-                            event.reply_token,
-                            TextSendMessage(text="sorry id cewe does not exist"))
-            elif text == "kony get cewe unvoted" or text == "kony get cewe unrating":
+        if words[1] == "rate" or words[1] == "rating" or words[1] == "vote" or words[1] == "voting":
+            if words[2].isdigit() and words[3].isdigit():
                 profile = line_bot_api.get_profile(event.source.user_id)
                 name = profile.display_name.replace(" ","_")
                 
-                id_cewe = get_cewe_unvoted(name)
-                print(id_cewe)
-                if id_cewe != -1:
-                    url_img = HTTPS+STATIC+"/"+str(id_cewe)+".jpg"
+                id_cewe = words[2]
+                score = words[3]
+                rate_cewe(name,id_cewe,score)
+                url_img = HTTPS+STATIC+"/"+str(id_cewe)+".jpg"
+                
+                if os.path.isfile("."+STATIC+"/"+str(id_cewe)+".jpg"):
                     list_voter = get_rated(id_cewe)
-                    
+                                                    
                     line_bot_api.reply_message(
-                                    event.reply_token,
-                                    FlexSendMessage(alt_text='hello',
-                                                    contents=flex.flex_rated(str(id_cewe),url_img,list_voter)))
+                        event.reply_token,
+                        FlexSendMessage(alt_text='hello',
+                                        contents=flex.flex_rated(str(id_cewe),url_img,list_voter)))
                 else:
                     line_bot_api.reply_message(
-                                    event.reply_token,
-                                    TextSendMessage(text="you already voted all cewe"))
+                        event.reply_token,
+                        TextSendMessage(text="sorry id cewe does not exist"))
+                    
+        elif text == "kony get cewe unvoted" or text == "kony get cewe unrating":
+            profile = line_bot_api.get_profile(event.source.user_id)
+            name = profile.display_name.replace(" ","_")
+            
+            id_cewe = get_cewe_unvoted(name)
+            print(id_cewe)
+            if id_cewe != -1:
+                url_img = HTTPS+STATIC+"/"+str(id_cewe)+".jpg"
+                list_voter = get_rated(id_cewe)
+                
+                line_bot_api.reply_message(
+                                event.reply_token,
+                                FlexSendMessage(alt_text='hello',
+                                                contents=flex.flex_rated(str(id_cewe),url_img,list_voter)))
+            else:
+                line_bot_api.reply_message(
+                                event.reply_token,
+                                TextSendMessage(text="you already voted all cewe"))
             
         elif text == "kony createtablevoting":
             create_table()
+            
         elif text == "kony help":
             line_bot_api.reply_message(
                     event.reply_token,
