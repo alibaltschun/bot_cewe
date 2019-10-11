@@ -33,21 +33,22 @@ def __flex_body__(title,url,voter):
             "color": "#aaaaaa",
             "size": "md",
             "flex": 1
-          },
-          {
-            "type": "box",
-            "layout": "vertical",
-            "margin": "lg",
-            "spacing": "sm",
-            "contents": [
-            ]
           }
         ]
       }
     }
     flex['body']['contents'][0]['text'] = "ID cewe : {}".format(title)
     flex['hero']['url'] = url
-    flex['body']['contents'][2]['contents'] = voter
+    if voter != []:
+        array_voter = {
+            "type": "box",
+            "layout": "vertical",
+            "margin": "lg",
+            "spacing": "sm",
+            "contents": [
+            ]}
+        array_voter['contents'] = voter
+        flex['body']['contents'].append(array_voter)
     
     return flex
       

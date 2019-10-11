@@ -16,7 +16,8 @@ from linebot.models import (
 
 app = Flask(__name__, static_url_path='')
 
-HTTPS = "https://5e26c200.ngrok.io"
+HTTPS = config("LINE_CHANNEL_ACCESS_TOKEN",
+           default=os.environ.get('LINE_ACCESS_TOKEN'))
 STATIC = "/static"
 
 line_bot_api = LineBotApi(
@@ -75,6 +76,27 @@ def select_all_rating():
     conn.close()
     return rows
 
+def get_cewe_unvoted(username):
+    conn = sqlite3.connect('cewe.db')
+    c = conn.cursor()
+    
+    rows = []
+    for row in c.execute('''select id_cewe from rating
+                         where username="{}"'''.format(username)):
+        rows.append(row)
+    conn.commit()
+    conn.close()
+    
+    rows = [i[0] for i in rows]
+    n = len([name for name in os.listdir("."+STATIC) if os.path.isfile("."+STATIC+"/"+name)])
+    id_cewe = -1
+    for i in range(1,n+1):
+        if i not in rows:
+            id_cewe = i
+            break
+    return id_cewe
+    
+
 
 @app.route('/static/<path:path>')
 def send_js(path):
@@ -124,7 +146,7 @@ def handle_text_message(event):
     
     if words[0] == "kony":
         if len(words) == 4:
-            if words[1] == "rate" or words[1] == "rating" :
+            if words[1] == "rate" or words[1] == "rating" or words[1] == "vote" or words[1] == "voting":
                 if words[2].isdigit() and words[3].isdigit():
                     profile = line_bot_api.get_profile(event.source.user_id)
                     name = profile.display_name.replace(" ","_")
@@ -145,7 +167,25 @@ def handle_text_message(event):
                         line_bot_api.reply_message(
                             event.reply_token,
                             TextSendMessage(text="sorry id cewe does not exist"))
-        
+            elif text == "kony get cewe unvoted" or text == "kony get cewe unrating":
+                profile = line_bot_api.get_profile(event.source.user_id)
+                name = profile.display_name.replace(" ","_")
+                
+                id_cewe = get_cewe_unvoted(name)
+                print(id_cewe)
+                if id_cewe != -1:
+                    url_img = HTTPS+STATIC+"/"+str(id_cewe)+".jpg"
+                    list_voter = get_rated(id_cewe)
+                    
+                    line_bot_api.reply_message(
+                                    event.reply_token,
+                                    FlexSendMessage(alt_text='hello',
+                                                    contents=flex.flex_rated(str(id_cewe),url_img,list_voter)))
+                else:
+                    line_bot_api.reply_message(
+                                    event.reply_token,
+                                    TextSendMessage(text="you already voted all cewe"))
+            
         elif text == "kony createtablevoting":
             create_table()
         elif text == "kony help":
@@ -154,7 +194,12 @@ def handle_text_message(event):
             
 rating cewe : 'kony rate id_cewe rating'
 e.g -> 'kony rate 1 10'
-rating range (0-10) """
+rating range (0-10) 
+
+get unrated cewe by user : 'kony get cewe unvoted 
+
+info keywords:
+rate or rating or vote or voting"""
             
             line_bot_api.reply_message(
             event.reply_token,
