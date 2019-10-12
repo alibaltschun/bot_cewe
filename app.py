@@ -48,8 +48,6 @@ TEXT_HELP = """# Send image message
 
 # info 
 vote_regex : {}
-
-info keywords:
 """.format(VOTE_REGEX)
     
 
