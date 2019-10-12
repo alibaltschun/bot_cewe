@@ -48,6 +48,15 @@ TEXT_HELP = """# Send image message
 
 # info 
 vote_regex : {}
+score :
+10 : njir gorgeous B.G.T
+9 : so beautiful
+8 : beautiful
+7 : not bad
+6 : its ok
+5 : underated
+4,3,2,1 : evil judge
+0 : invalid data
 """.format(VOTE_REGEX)
     
 
